@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Protobuf to Typescript</title>
+    <link rel="stylesheet" href="./index.css">
+  </head>
+  <body>
+    <header class="header">
+      <a href="./">Converter</a>
+      <a href="./response.html" class="active">Mock</a>
+    </header>
+    <div id="container">
+      <h2 class="error">Error!!!Please check your protobuf!</h2>
+      <div class="editor">
+        <h3>Protocol buffer:</h3>
+        <br>
+<textarea name="" id="protobuf" rows="40" oninput="onProtobuf()">
+  syntax = "proto3";
+  
+  service Greeter {
+      rpc SayHello (HelloRequest) returns (HelloReply) {}
+  }
+  
+  message HelloRequest {
+    string name = 1;
+  }
+  
+  message Teacher {
+    string name = 1;
+  }
+  
+  message HelloReply {
+      string message = 1;
+      number test = 2;
+      Teacher teacher = 3;
+  }
+</textarea>
+      </div>
+      <div class="selector">
+        <h3>Methods:</h3>
+        <br>
+        <ul id="selector"></ul>
+      </div>
+      <div class="editor">
+        <h3>Response Mock Result:</h3>
+        <br>
+        <textarea name="" id="typescript" rows="40"></textarea>
+      </div>
+    </div>
+    <script src="https://unpkg.com/protobufjs@6.8.8/dist/protobuf.min.js"></script>
+    <script src="../dist/index.umd.js"></script>
+    <script>
+      function trigger (isShow) {
+        document.querySelector('.error').style.display =  isShow ? 'block': 'none';
+      }
+      function onProtobuf() {
+          var src = document.getElementById("protobuf").value;
+          var methods = pbToTypescript.getAllMethods('syntax = "proto3";' + src);
+          var methodNames = Object.keys(methods);
+          var selector = document.getElementById("selector")
+
+          selector.childNodes.forEach((node) => {
+            selector.removeChild(node);
+          })
+
+          methodNames.forEach((methodName) => {
+            var li = document.createElement('li');
+            li.classList.add('method-item');
+            li.innerText= methodName;
+            li.addEventListener('click', getMockResponse)
+            selector.append(li);
+          });
+          trigger(false)    
+      }
+
+      function getMockResponse(e) {
+        var src = document.getElementById("protobuf").value;
+        var ts = pbToTypescript.mockResponse('syntax = "proto3";' + src, e.target.innerText);
+        document.getElementById("typescript").value = JSON.stringify(ts);
+        trigger(false)    
+      }
+
+      window.onerror = () => {
+        trigger(true)
+      }
+
+      onProtobuf()
+
+    </script>
+  </body>
+</html>
